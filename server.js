@@ -25,27 +25,38 @@ app.get("/notes", function(req, res) {
 
 // return all saved notes in database as JSON
 app.get("/api/notes", function(req, res) {
-  res.json(database);
+  fs.readFile(databasePath, (err,data) => {
+    let notes = JSON.parse(data);
+    res.json(notes);
+  })
 });
 
 app.post("/api/notes", function(req, res) {
   var g = new Generator();
   let newNote = req.body;
   newNote.id = g.newId();
-  database.push(newNote);
-  fs.writeFile(databasePath,JSON.stringify(database), () => {
-    res.json(newNote);
+  fs.readFile(databasePath, (err,data) => {
+    let notes = JSON.parse(data);
+    notes.push(newNote);
+    fs.writeFile(databasePath,JSON.stringify(notes), () => {
+      res.json(notes);
+    })
   })
 });
 
 app.delete("/api/notes/:id", function(req, res) {
   let noteID = req.params.id;
 
-  let newArray = database.filter( (note) => note.id !== noteID );
-  fs.writeFile(databasePath,JSON.stringify(newArray), () => {
-    res.json(newArray);
+  fs.readFile(databasePath, (err,data) => {
+    let notes = JSON.parse(data);
+    let newArr = notes.filter((note) => note.id !== noteID );
+    fs.writeFile(databasePath,JSON.stringify(newArr), () => {
+     res.json(newArr);
+   })
   })
 });
+
+
 
 app.listen(PORT, function() {
   console.log("App listening on PORT: " + PORT);
